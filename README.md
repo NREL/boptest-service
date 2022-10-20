@@ -10,4 +10,10 @@ A deployment of `BOPTEST-Service` is available at https://api.boptest.net
 
 # Building and Running on a Personal Computer
 
-# Kubernetes Based Deployment on a Commercial Cloud Provider
+# Running Tests
+
+Testing is based on the BOPTEST [test suite](https://github.com/NREL/boptest-service/tree/develop/boptest/testing) with small adaptations to conform to the BOPTEST-Service API. Follow the [README](https://github.com/NREL/boptest-service/blob/develop/boptest/testing/README.md) for more information.
+
+# Kubernetes Based Deployment
+
+NREL maintains a helm chart for Kubernetes based deployments of BOPTEST-Service.
