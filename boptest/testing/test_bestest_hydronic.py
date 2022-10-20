@@ -5,6 +5,7 @@ testcase bestest_hydronic must already be deployed.
 
 """
 
+import requests
 import unittest
 import os
 import utilities
@@ -14,13 +15,23 @@ class Run(unittest.TestCase, utilities.partialTestTimePeriod, utilities.partialT
 
     '''
 
+    @classmethod
+    def setUpClass(cls):
+        cls.name = 'bestest_hydronic'
+        cls.url = 'http://127.0.0.1:80'
+        cls.testid = requests.post('{0}/testcases/{1}/select'.format(cls.url, cls.name)).json()['testid']
+
+    @classmethod
+    def tearDownClass(cls):
+        requests.put('{0}/stop/{1}'.format(cls.url, cls.testid))
+
     def setUp(self):
         '''Setup for each test.
 
         '''
 
-        self.name = 'bestest_hydronic'
-        self.url = 'http://127.0.0.1:5000'
+        self.name = Run.name
+        self.url = Run.url
         self.points_check = ['reaQHea_y', 'reaTRoo_y',
                              'ovePum_u', 'reaPPum_y',
                              'oveTSetSup_u', 'weaSta_reaWeaTDryBul_y']
@@ -45,14 +56,24 @@ class API(unittest.TestCase, utilities.partialTestAPI):
 
     '''
 
+    @classmethod
+    def setUpClass(cls):
+        cls.name = 'bestest_hydronic'
+        cls.url = 'http://127.0.0.1:80'
+        cls.testid = requests.post('{0}/testcases/{1}/select'.format(cls.url, cls.name)).json()['testid']
+
+    @classmethod
+    def tearDownClass(cls):
+        requests.put('{0}/stop/{1}'.format(cls.url, cls.testid))
+
     def setUp(self):
         '''Setup for testcase.
 
         '''
-
-        self.name = 'bestest_hydronic'
-        self.url = 'http://127.0.0.1:5000'
-        self.step_ref = 3600
+        self.name = API.name
+        self.url = API.url
+        self.step_ref = 3600.0
+        self.testid = API.testid
         self.test_time_period = 'peak_heat_day'
 
 if __name__ == '__main__':

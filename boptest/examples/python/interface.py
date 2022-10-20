@@ -44,7 +44,7 @@ def check_response(response):
     sys.exit()
 
 
-def control_test(control_module='', start_time=0, warmup_period=0, length=24*3600, scenario=None, step=300, customized_kpi_config=None, use_forecast=False):
+def control_test(testcase, control_module='', start_time=0, warmup_period=0, length=24*3600, scenario=None, step=300, customized_kpi_config=None, use_forecast=False):
     """
     Main interface that executes communication between testcase (controller) and the restufl API communicating with
         the model (FMU) running in docker.
@@ -52,6 +52,8 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
     Parameters
     ----------
 
+    testcase: str
+        The string identifier of the testcase.
     control_module: str
         relative path to controller code without .py suffix (e.g., 'controllers.sup').
     start_time: int, optional
@@ -97,24 +99,26 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
     # SETUP TEST
     # -------------------------------------------------------------------------
     # Set URL for testcase
-    url = 'http://127.0.0.1:5000'
-    # Instantiate concrete controller (pid, pidTwoZones, sup, etc.)
+    url = 'http://127.0.0.1'
+    testid = requests.post('{0}/testcases/{1}/select'.format(url,testcase)).json()['testid']
+
+    # Instantiate controller
     controller = Controller(control_module, use_forecast)
 
     # GET TEST INFORMATION
     # -------------------------------------------------------------------------
     print('\nTEST CASE INFORMATION\n---------------------')
     # Retrieve testcase name from REST API
-    name = check_response(requests.get('{0}/name'.format(url)))
+    name = check_response(requests.get('{0}/name/{1}'.format(url, testid)))
     print('Name:\t\t\t\t{0}'.format(name))
     # Retrieve a list of inputs (controllable points) for the model from REST API
-    inputs = check_response(requests.get('{0}/inputs'.format(url)))
+    inputs = check_response(requests.get('{0}/inputs/{1}'.format(url, testid)))
     print('Control Inputs:\t\t\t{0}'.format(inputs))
     # Retrieve a list of measurements (outputs) for the model from REST API
-    measurements = check_response(requests.get('{0}/measurements'.format(url)))
+    measurements = check_response(requests.get('{0}/measurements/{1}'.format(url, testid)))
     print('Measurements:\t\t\t{0}'.format(measurements))
     # Get the default simulation timestep for the model for simulation run
-    step_def = check_response(requests.get('{0}/step'.format(url)))
+    step_def = check_response(requests.get('{0}/step/{1}'.format(url, testid)))
     print('Default Control Step:\t{0}'.format(step_def))
 
     # IF ANY CUSTOM KPI CALCULATION, DEFINE STRUCTURES
@@ -137,7 +141,7 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
     print('Initializing test case simulation.')
     if scenario is not None:
         # Initialize test with a scenario time period
-        res = check_response(requests.put('{0}/scenario'.format(url), data=scenario))['time_period']
+        res = check_response(requests.put('{0}/scenario/{1}'.format(url, testid), data=scenario))['time_period']
         print(res)
         # Record test simulation start time
         start_time = int(res['time'])
@@ -146,7 +150,7 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
         total_time_steps = int((365 * 24 * 3600)/step)
     else:
         # Initialize test with a specified start time and warmup period
-        res = check_response(requests.put('{0}/initialize'.format(url), data={'start_time': start_time, 'warmup_period': warmup_period}))
+        res = check_response(requests.put('{0}/initialize/{1}'.format(url, testid), data={'start_time': start_time, 'warmup_period': warmup_period}))
         print("RESULT: {}".format(res))
         # Set final time and total time steps according to specified length (seconds)
         final_time = start_time + length
@@ -155,16 +159,17 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
         print('Successfully initialized the simulation')
     print('\nRunning test case...')
     # Set simulation time step
-    res = check_response(requests.put('{0}/step'.format(url), data={'step': step}))
+    res = check_response(requests.put('{0}/step/{1}'.format(url, testid), data={'step': step}))
     # Initialize input to simulation from controller
     u = controller.initialize()
     # Initialize forecast storage structure
     forecasts = None
-    print(requests.get('{0}/scenario'.format(url)).json())
+    print(requests.get('{0}/scenario/{1}'.format(url, testid)).json())
     # Simulation Loop
     for t in range(total_time_steps):
         # Advance simulation with control input value(s)
-        y = check_response(requests.post('{0}/advance'.format(url), data=u))
+        print('advance with u: %s' % u)
+        y = check_response(requests.post('{0}/advance/{1}'.format(url, testid), data=u))
         # If simulation is complete break simulation loop
         if not y:
             break
@@ -178,7 +183,7 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
         # If controller needs a forecast, get the forecast data and provide the forecast to the controller
         if controller.use_forecast:
             # Retrieve forecast from restful API
-            forecast_data = check_response(requests.get('{0}/forecast'.format(url)))
+            forecast_data = check_response(requests.get('{0}/forecast/{1}'.format(url, testid)))
             # Use forecast data to update controller-specific forecast data
             forecasts = controller.update_forecasts(forecast_data, forecasts)
         else:
@@ -191,7 +196,7 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
     # VIEW RESULTS
     # -------------------------------------------------------------------------
     # Report KPIs
-    kpi = check_response(requests.get('{0}/kpi'.format(url)))
+    kpi = check_response(requests.get('{0}/kpi/{1}'.format(url, testid)))
     print('\nKPI RESULTS \n-----------')
     for key in kpi.keys():
         if key == 'ener_tot':
@@ -222,8 +227,11 @@ def control_test(control_module='', start_time=0, warmup_period=0, length=24*360
     points = list(measurements.keys()) + list(inputs.keys())
     df_res = pd.DataFrame()
     for point in points:
-        res = check_response(requests.put('{0}/results'.format(url), data={'point_name': point, 'start_time': start_time, 'final_time': final_time}))
+        res = check_response(requests.put('{0}/results/{1}'.format(url, testid), data={'point_name': point, 'start_time': start_time, 'final_time': final_time}))
         df_res = pd.concat((df_res, pd.DataFrame(data=res[point], index=res['time'], columns=[point])), axis=1)
     df_res.index.name = 'time'
+
+    # Stop the test
+    requests.put('{0}/stop/{1}'.format(url, testid))
 
     return kpi, df_res, custom_kpi_result, forecasts

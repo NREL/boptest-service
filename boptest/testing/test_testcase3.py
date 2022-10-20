@@ -5,6 +5,7 @@ already be deployed.
 
 """
 
+import requests
 import unittest
 import pandas as pd
 import os
@@ -48,14 +49,24 @@ class API(unittest.TestCase, utilities.partialTestAPI):
 
     '''
 
+    @classmethod
+    def setUpClass(cls):
+        cls.name = 'testcase3'
+        cls.url = 'http://127.0.0.1:80'
+        cls.testid = requests.post('{0}/testcases/{1}/select'.format(cls.url, cls.name)).json()['testid']
+
+    @classmethod
+    def tearDownClass(cls):
+        requests.put('{0}/stop/{1}'.format(cls.url, cls.testid))
+
     def setUp(self):
         '''Setup for testcase.
 
         '''
-
-        self.name = 'testcase3'
-        self.url = 'http://127.0.0.1:5000'
-        self.step_ref = 60
+        self.name = API.name
+        self.url = API.url
+        self.step_ref = 60.0
+        self.testid = API.testid
         self.test_time_period = 'test_day'
 
 if __name__ == '__main__':

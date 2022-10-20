@@ -347,7 +347,7 @@ class partialChecks(object):
 
         return s_test
 
-    def results_to_df(self, points, start_time, final_time, url='http://127.0.0.1:5000'):
+    def results_to_df(self, points, start_time, final_time, url='http://127.0.0.1:80'):
         '''Convert results from boptest into pandas DataFrame timeseries.
 
         Parameters
@@ -360,7 +360,7 @@ class partialChecks(object):
             Ending time of data to get in seconds.
         url: str
             URL pointing to deployed boptest test case.
-            Default is http://127.0.0.1:5000.
+            Default is http://127.0.0.1:80.
 
         Returns
         -------
@@ -371,20 +371,15 @@ class partialChecks(object):
 
         df = pd.DataFrame()
         for point in points:
-            res = requests.put('{0}/results'.format(url), data={'point_name':point,'start_time':start_time, 'final_time':final_time}).json()['payload']
+            res = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name':point,'start_time':start_time, 'final_time':final_time}).json()['payload']
             df = pd.concat((df,pd.DataFrame(data=res[point], index=res['time'],columns=[point])), axis=1)
         df.index.name = 'time'
 
         return df
 
-    def get_all_points(self, url='localhost:5000'):
+    def get_all_points(self):
         '''Get all of the input and measurement point names from boptest.
 
-        Parameters
-        ----------
-        url: str, optional
-            URL pointing to deployed boptest test case.
-            Default is localhost:5000.
 
         Returns
         -------
@@ -393,8 +388,8 @@ class partialChecks(object):
 
         '''
 
-        measurements = requests.get('{0}/measurements'.format(url)).json()['payload']
-        inputs = requests.get('{0}/inputs'.format(url)).json()['payload']
+        measurements = requests.get('{0}/measurements/{1}'.format(self.url, self.testid)).json()['payload']
+        inputs = requests.get('{0}/inputs/{1}'.format(self.url, self.testid)).json()['payload']
         points = list(measurements.keys()) + list(inputs.keys())
 
         return points
@@ -446,7 +441,7 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        name = requests.get('{0}/name'.format(self.url)).json()['payload']
+        name = requests.get('{0}/name/{1}'.format(self.url, self.testid)).json()['payload']
         self.assertEqual(name['name'], self.name)
 
     def test_get_inputs(self):
@@ -454,7 +449,7 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        inputs = requests.get('{0}/inputs'.format(self.url)).json()['payload']
+        inputs = requests.get('{0}/inputs/{1}'.format(self.url, self.testid)).json()['payload']
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'get_inputs.json')
         self.compare_ref_json(inputs, ref_filepath)
 
@@ -463,7 +458,7 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        measurements = requests.get('{0}/measurements'.format(self.url)).json()['payload']
+        measurements = requests.get('{0}/measurements/{1}'.format(self.url, self.testid)).json()['payload']
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'get_measurements.json')
         self.compare_ref_json(measurements, ref_filepath)
 
@@ -472,7 +467,7 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        step = requests.get('{0}/step'.format(self.url)).json()['payload']
+        step = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         df = pd.DataFrame(data=[step], index=['step'], columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'get_step.csv')
@@ -483,12 +478,12 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        step_current = requests.get('{0}/step'.format(self.url)).json()['payload']
+        step_current = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         step = 101
-        requests.put('{0}/step'.format(self.url), data={'step':step})
-        step_set = requests.get('{0}/step'.format(self.url)).json()['payload']
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step})
+        step_set = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         self.assertEqual(step, step_set)
-        requests.put('{0}/step'.format(self.url), data={'step':step_current})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step_current})
 
     def test_initialize(self):
         '''Test initialization of test simulation.
@@ -496,47 +491,47 @@ class partialTestAPI(partialChecks):
         '''
 
         # Get measurements and inputs
-        points = self.get_all_points(self.url)
+        points = self.get_all_points()
         # Get current step
-        step = requests.get('{0}/step'.format(self.url)).json()['payload']
+        step = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         # Initialize
         start_time = 0.5*24*3600
-        y = requests.put('{0}/initialize'.format(self.url), data={'start_time':start_time, 'warmup_period':0.5*24*3600}).json()['payload']
+        y = requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':start_time, 'warmup_period':0.5*24*3600}).json()['payload']
         # Check that initialize returns the right initial values and results
         df = pd.DataFrame.from_dict(y, orient = 'index', columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'initial_values.csv')
         self.compare_ref_values_df(df, ref_filepath)
         # Check trajectories
-        df = self.results_to_df(points, 0, start_time, self.url)
+        df = self.results_to_df(points, 0, start_time)
         # Set reference file path
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'results_initialize_initial.csv')
         # Check results
         self.compare_ref_timeseries_df(df,ref_filepath)
         # Check kpis
-        res_kpi = requests.get('{0}/kpi'.format(self.url)).json()['payload']
+        res_kpi = requests.get('{0}/kpi/{1}'.format(self.url, self.testid)).json()['payload']
         df = pd.DataFrame.from_dict(res_kpi, orient='index', columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'kpis_initialize_initial.csv')
         self.compare_ref_values_df(df, ref_filepath)
         # Advance
         step_advance = 1*24*3600
-        requests.put('{0}/step'.format(self.url), data={'step':step_advance})
-        y = requests.post('{0}/advance'.format(self.url),data = {}).json()['payload']
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step_advance})
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid),data = {}).json()['payload']
         # Check trajectories
-        df = self.results_to_df(points, start_time, start_time+step_advance, self.url)
+        df = self.results_to_df(points, start_time, start_time+step_advance)
         # Set reference file path
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'results_initialize_advance.csv')
         # Check results
         self.compare_ref_timeseries_df(df,ref_filepath)
         # Check kpis
-        res_kpi = requests.get('{0}/kpi'.format(self.url)).json()['payload']
+        res_kpi = requests.get('{0}/kpi/{1}'.format(self.url, self.testid)).json()['payload']
         df = pd.DataFrame.from_dict(res_kpi, orient='index', columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'kpis_initialize_advance.csv')
         self.compare_ref_values_df(df, ref_filepath)
         # Set step back to step
-        requests.put('{0}/step'.format(self.url), data={'step':step})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step})
 
     def test_advance_no_data(self):
         '''Test advancing of simulation with no input data.
@@ -546,9 +541,9 @@ class partialTestAPI(partialChecks):
 
         '''
 
-        requests.put('{0}/initialize'.format(self.url), data={'start_time':0, 'warmup_period':0})
-        requests.put('{0}/step'.format(self.url), data={'step':self.step_ref})
-        y = requests.post('{0}/advance'.format(self.url), data=dict()).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':self.step_ref})
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=dict()).json()['payload']
         df = pd.DataFrame.from_dict(y, orient = 'index', columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'advance_no_data.csv')
@@ -591,9 +586,9 @@ class partialTestAPI(partialChecks):
         else:
             raise Exception('Need to specify u for this test case')
 
-        requests.put('{0}/initialize'.format(self.url), data={'start_time':0, 'warmup_period':0})
-        requests.put('{0}/step'.format(self.url), data={'step': self.step_ref})
-        y = requests.post('{0}/advance'.format(self.url), data=u).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step': self.step_ref})
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=u).json()['payload']
         df = pd.DataFrame.from_dict(y, orient='index', columns=['value'])
         df.index.name = 'keys'
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'advance_false_overwrite.csv')
@@ -607,9 +602,9 @@ class partialTestAPI(partialChecks):
         '''
 
         # Initialize
-        requests.put('{0}/initialize'.format(self.url), data={'start_time':0, 'warmup_period':0})
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
         # Test case forecast
-        forecast = requests.get('{0}/forecast'.format(self.url)).json()['payload']
+        forecast = requests.get('{0}/forecast/{1}'.format(self.url, self.testid)).json()['payload']
         df_forecaster = pd.DataFrame(forecast).set_index('time')
         # Set reference file path
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'get_forecast_default.csv')
@@ -621,13 +616,16 @@ class partialTestAPI(partialChecks):
 
         '''
 
+        # Initialize - BOPTEST Service needs the test to be initialized before put and get forecast parameters
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
+
         # Define forecast parameters
         forecast_parameters_ref = {'horizon': 3600, 'interval':300}
         # Set forecast parameters
-        ret = requests.put('{0}/forecast_parameters'.format(self.url),
+        ret = requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                            data=forecast_parameters_ref).json()['payload']
         # Get forecast parameters
-        forecast_parameters = requests.get('{0}/forecast_parameters'.format(self.url)).json()['payload']
+        forecast_parameters = requests.get('{0}/forecast_parameters/{1}'.format(self.url, self.testid)).json()['payload']
         # Check the forecast parameters
         self.assertDictEqual(forecast_parameters, forecast_parameters_ref)
         # Check the return on the put request
@@ -643,12 +641,12 @@ class partialTestAPI(partialChecks):
         # Define forecast parameters
         forecast_parameters_ref = {'horizon': 3600, 'interval':300}
         # Initialize
-        requests.put('{0}/initialize'.format(self.url), data={'start_time':0, 'warmup_period':0})
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
         # Set forecast parameters
-        requests.put('{0}/forecast_parameters'.format(self.url),
+        requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                                 data=forecast_parameters_ref)
         # Test case forecast
-        forecast = requests.get('{0}/forecast'.format(self.url)).json()['payload']
+        forecast = requests.get('{0}/forecast/{1}'.format(self.url, self.testid)).json()['payload']
         df_forecaster = pd.DataFrame(forecast).set_index('time')
         # Set reference file path
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'get_forecast_with_parameters.csv')
@@ -657,18 +655,17 @@ class partialTestAPI(partialChecks):
 
     def test_set_get_scenario(self):
         '''Test setting and getting the scenario of test.
-
         '''
 
         # Set scenario
-        scenario_current = requests.get('{0}/scenario'.format(self.url)).json()['payload']
+        scenario_current = requests.get('{0}/scenario/{1}'.format(self.url, self.testid)).json()['payload']
         scenario = {'electricity_price':'highly_dynamic',
                     'time_period':self.test_time_period}
-        requests.put('{0}/scenario'.format(self.url), data=scenario)
-        scenario_set = requests.get('{0}/scenario'.format(self.url)).json()['payload']
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario)
+        scenario_set = requests.get('{0}/scenario/{1}'.format(self.url, self.testid)).json()['payload']
         self.assertEqual(scenario, scenario_set)
         # Check initialized correctly
-        points = self.get_all_points(self.url)
+        points = self.get_all_points()
         # Don't check weather
         points_check = []
         for key in points:
@@ -680,7 +677,7 @@ class partialTestAPI(partialChecks):
         # Check results
         self.compare_ref_timeseries_df(df,ref_filepath)
         # Return scenario to original
-        requests.put('{0}/scenario'.format(self.url), data=scenario_current)
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario_current)
 
     def test_partial_results_inner(self):
         '''Test getting results for start time after and final time before.
@@ -695,14 +692,14 @@ class partialTestAPI(partialChecks):
                             'multizone_residential_hydronic':'weatherStation_reaWeaWinSpe_y',
                             'singlezone_commercial_hydronic':'ahu_reaTRetAir_y',
                             'multizone_office_simple_air':'hvac_reaAhu_PPumHea_y'}
-        requests.put('{0}/initialize'.format(self.url), data={'start_time': 0, 'warmup_period': 0})
-        requests.put('{0}/step'.format(self.url), data={'step': self.step_ref})
-        measurements = requests.get('{0}/measurements'.format(self.url)).json()['payload']
-        y = requests.post('{0}/advance'.format(self.url), data=dict()).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time': 0, 'warmup_period': 0})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step': self.step_ref})
+        measurements = requests.get('{0}/measurements/{1}'.format(self.url, self.testid)).json()['payload']
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=dict()).json()['payload']
         point = measurement_list[self.name]
         if point not in measurements:
             raise KeyError('Point {0} not in measurements list.'.format(point))
-        res_inner = requests.put('{0}/results'.format(self.url), data={'point_name': point,
+        res_inner = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name': point,
                                                                        'start_time': self.step_ref*0.25,
                                                                        'final_time': self.step_ref*0.75}).json()['payload']
         df = pd.DataFrame.from_dict(res_inner).set_index('time')
@@ -722,14 +719,14 @@ class partialTestAPI(partialChecks):
                             'multizone_residential_hydronic':'weatherStation_reaWeaWinSpe_y',
                             'singlezone_commercial_hydronic':'ahu_reaTRetAir_y',
                             'multizone_office_simple_air':'hvac_reaAhu_PPumHea_y'}
-        requests.put('{0}/initialize'.format(self.url), data={'start_time': 0, 'warmup_period': 0})
-        requests.put('{0}/step'.format(self.url), data={'step':self.step_ref})
-        measurements = requests.get('{0}/measurements'.format(self.url)).json()['payload']
-        y = requests.post('{0}/advance'.format(self.url), data=dict()).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time': 0, 'warmup_period': 0})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':self.step_ref})
+        measurements = requests.get('{0}/measurements/{1}'.format(self.url, self.testid)).json()['payload']
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=dict()).json()['payload']
         point = measurement_list[self.name]
         if point not in measurements:
             raise KeyError('Point {0} not in measurements list.'.format(point))
-        res_outer = requests.put('{0}/results'.format(self.url), data={'point_name': point,
+        res_outer = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name': point,
                                                                  'start_time': 0-self.step_ref,
                                                                  'final_time': self.step_ref*2}).json()['payload']
         df = pd.DataFrame.from_dict(res_outer).set_index('time')
@@ -742,24 +739,24 @@ class partialTestAPI(partialChecks):
         '''
 
         # Get current scenario and step
-        scenario_current = requests.get('{0}/scenario'.format(self.url)).json()['payload']
-        step_current = requests.get('{0}/step'.format(self.url)).json()['payload']
+        scenario_current = requests.get('{0}/scenario/{1}'.format(self.url, self.testid)).json()['payload']
+        step_current = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         api_key = "valid_api_key"
         # Set testing scenario
         scenario = {"time_period":self.test_time_period,
                     "electricity_price":"dynamic"}
         # Set test case scenario
-        y = requests.put("{0}/scenario".format(self.url),
+        y = requests.put("{0}/scenario/{1}".format(self.url, self.testid),
                          data=scenario).json()["payload"]["time_period"]
         # Set step so doesn't take too long
-        requests.put('{0}/step'.format(self.url), data={'step':86400})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':86400})
         # Simulation Loop
         while y:
             # Compute control signal
             u = {}
             # Advance simulation with control signal
-            y = requests.post("{0}/advance".format(self.url), data=u).json()["payload"]
-        payload = requests.post("{0}/submit".format(self.url), data={"api_key": api_key,
+            y = requests.post("{0}/advance/{1}".format(self.url, self.testid), data=u).json()["payload"]
+        payload = requests.post("{0}/submit/{1}".format(self.url, self.testid), data={"api_key": api_key,
                                                             "tag1":"baseline",
                                                             "tag2":"unit_test",
                                                             "unit_test":"True"}).json()['payload']
@@ -769,8 +766,8 @@ class partialTestAPI(partialChecks):
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'submit.json')
         self.compare_ref_json(payload, ref_filepath)
         # Return scenario and step to original
-        requests.put('{0}/scenario'.format(self.url), data=scenario_current)
-        requests.put('{0}/step'.format(self.url), data={'step':step_current})
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario_current)
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step_current})
 
     def test_invalid_step(self):
         '''Test set step with invalid non-numeric and negative values returns a 400 error.
@@ -779,11 +776,11 @@ class partialTestAPI(partialChecks):
 
         # Try setting non-numeric step
         step = "5*7*24*3600"
-        payload = requests.put('{0}/step'.format(self.url), data={'step': step})
+        payload = requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step': step})
         self.compare_error_code(payload, "Invalid step in set_step did not return 400 message.")
         # Try setting negative step
         step = -5*7*24*3600
-        payload = requests.put('{0}/step'.format(self.url), data={'step': step})
+        payload = requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step': step})
         self.compare_error_code(payload, "Negative step int set_step did not return 400 message.")
 
     def test_invalid_forecast_parameters(self):
@@ -793,22 +790,22 @@ class partialTestAPI(partialChecks):
 
         # Try setting non-numeric horizon
         forecast_parameters_ref = {'horizon': 'foo', 'interval': 300}
-        payload = requests.put('{0}/forecast_parameters'.format(self.url),
+        payload = requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                                data=forecast_parameters_ref)
         self.compare_error_code(payload, "Invalid horizon in forecast_parameters request did not return 400 message.")
         # Try setting non-numeric interval
         forecast_parameters_ref = {'horizon': 3600, 'interval': 'bar'}
-        payload = requests.put('{0}/forecast_parameters'.format(self.url),
+        payload = requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                                data=forecast_parameters_ref)
         self.compare_error_code(payload, "Invalid interval in forecast_parameters request did not return 400 message.")
         # Try setting negative horizon
         forecast_parameters_ref = {'horizon': -3600, 'interval': 300}
-        payload = requests.put('{0}/forecast_parameters'.format(self.url),
+        payload = requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                                data=forecast_parameters_ref)
         self.compare_error_code(payload, "Invalid interval in forecast_parameters request did not return 400 message.")
         # Try setting negative interval
         forecast_parameters_ref = {'horizon': 3600, 'interval': -300}
-        payload = requests.put('{0}/forecast_parameters'.format(self.url),
+        payload = requests.put('{0}/forecast_parameters/{1}'.format(self.url, self.testid),
                                data=forecast_parameters_ref)
         self.compare_error_code(payload, "Invalid interval in forecast_parameters request did not return 400 message.")
 
@@ -818,19 +815,19 @@ class partialTestAPI(partialChecks):
         '''
 
         # Set scenario
-        scenario_current = requests.get('{0}/scenario'.format(self.url)).json()['payload']
+        scenario_current = requests.get('{0}/scenario/{1}'.format(self.url, self.testid)).json()['payload']
         # Try setting invalid electricity price
         scenario = {'electricity_price': 'invalid_scenario', 'time_period': self.test_time_period}
-        payload = requests.put('{0}/scenario'.format(self.url), data=scenario)
+        payload = requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario)
         self.compare_error_code(payload,
                                 "Invalid value for electricity_price in set_scenario request did not return 400 message.")
         # Try setting invalid time period
         scenario = {'electricity_price': 'highly_dynamic', 'time_period': "invalid_time_period"}
-        payload = requests.put('{0}/scenario'.format(self.url), data=scenario)
+        payload = requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario)
         self.compare_error_code(payload,
                                "Invalid value for time_period in set_scenario request did not return 400 message.")
         # Return scenario to original
-        requests.put('{0}/scenario'.format(self.url), data=scenario_current)
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario_current)
 
     def test_invalid_initialize(self):
         '''Test initialization of test simulation with invalid start_time and warmup_period returns 400 error.
@@ -840,25 +837,25 @@ class partialTestAPI(partialChecks):
         # Try setting non-numeric start_time
         start_time = "0.5 * 24 * 3600"
         warmup_period = 0.5*24*3600
-        y = requests.put('{0}/initialize'.format(self.url),
+        y = requests.put('{0}/initialize/{1}'.format(self.url, self.testid),
                          data={'start_time': start_time, 'warmup_period': warmup_period})
         self.compare_error_code(y,  "Invalid start_time to initialize request did not return 400 message.")
         # Try setting non-numeric warmup_period
         start_time = 0.5*24*3600
         warmup_period = "0.5 * 24 * 3600"
-        y = requests.put('{0}/initialize'.format(self.url),
+        y = requests.put('{0}/initialize/{1}'.format(self.url, self.testid),
                          data={'start_time': start_time, 'warmup_period': warmup_period})
         self.compare_error_code(y, "Invalid warmup_period in initialize request did not return 400 message.")
         # Try setting negative start_time
         start_time = -0.5*24*3600
         warmup_period = 0.5*24*3600
-        y = requests.put('{0}/initialize'.format(self.url),
+        y = requests.put('{0}/initialize/{1}'.format(self.url, self.testid),
                          data={'start_time': start_time, 'warmup_period': warmup_period})
         self.compare_error_code(y, "Negative start_time in initialize request did not return 400 message.")
         # Try setting negative warmup_period
         start_time = 0.5*24*3600
         warmup_period = -0.5*24*3600
-        y = requests.put('{0}/initialize'.format(self.url),
+        y = requests.put('{0}/initialize/{1}'.format(self.url, self.testid),
                          data={'start_time': start_time, 'warmup_period': warmup_period})
         self.compare_error_code(y, "Negative warmup_period in initialize request did not return 400 message.")
 
@@ -898,11 +895,11 @@ class partialTestAPI(partialChecks):
             if '_activate' in key:
                 for value in ['invalid', 1.2, '1.2']:
                     u[key] = value
-                    y = requests.post('{0}/advance'.format(self.url), data=u)
+                    y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=u)
                     self.compare_error_code(y, "Invalid advance request for _activate did not return 400 message.")
             else:
                 u[key] = "invalid"
-                y = requests.post('{0}/advance'.format(self.url), data=u)
+                y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=u)
                 self.compare_error_code(y, "Invalid advance request for _u did not return 400 message.")
 
     def test_invalid_advance_name(self):
@@ -913,7 +910,7 @@ class partialTestAPI(partialChecks):
         '''
 
         u = {'invalid': 0}
-        y = requests.post('{0}/advance'.format(self.url), data=u)
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=u)
         self.compare_error_code(y, "Invalid advance request for _u did not return 400 message.")
 
 
@@ -930,25 +927,25 @@ class partialTestAPI(partialChecks):
                             'multizone_residential_hydronic':'weatherStation_reaWeaWinSpe_y',
                             'singlezone_commercial_hydronic':'ahu_reaTRetAir_y',
                             'multizone_office_simple_air':'hvac_reaAhu_PPumHea_y'}
-        requests.put('{0}/initialize'.format(self.url), data={'start_time': 0, 'warmup_period': 0})
-        requests.put('{0}/step'.format(self.url), data={'step':self.step_ref})
-        measurements = requests.get('{0}/measurements'.format(self.url)).json()['payload']
-        requests.post('{0}/advance'.format(self.url), data=dict()).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time': 0, 'warmup_period': 0})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':self.step_ref})
+        measurements = requests.get('{0}/measurements/{1}'.format(self.url, self.testid)).json()['payload']
+        requests.post('{0}/advance/{1}'.format(self.url, self.testid), data=dict()).json()['payload']
         point = measurement_list[self.name]
         if point not in measurements:
             raise KeyError('Point {0} not in measurements list.'.format(point))
         # Try getting invalid start_time
-        res = requests.put('{0}/results'.format(self.url), data={'point_name': point,
+        res = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name': point,
                                                                  'start_time': "foo",
                                                                  'final_time': self.step_ref*2})
         self.compare_error_code(res, "Invalid start_time in get_results request did not return a 400 error.")
         # Try getting invalid final_time
-        res = requests.put('{0}/results'.format(self.url), data={'point_name': point,
+        res = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name': point,
                                                                  'start_time': 0.0 - self.step_ref,
                                                                  'final_time': "foo"})
         self.compare_error_code(res, "Invalid final_time in get_results request did not return a 400 error.")
         # Try getting invalid point_name
-        res = requests.put('{0}/results'.format(self.url), data={'point_name': "foo",
+        res = requests.put('{0}/results/{1}'.format(self.url, self.testid), data={'point_name': "foo",
                                                                  'start_time': 0.0 - self.step_ref,
                                                                  'final_time': self.step_ref*2.0})
         self.compare_error_code(res, "Invalid point_name in get_results request did not return a 400 error.")
@@ -959,47 +956,47 @@ class partialTestAPI(partialChecks):
         '''
 
         # Get current scenario and step
-        scenario_current = requests.get('{0}/scenario'.format(self.url)).json()['payload']
-        step_current = requests.get('{0}/step'.format(self.url)).json()['payload']
+        scenario_current = requests.get('{0}/scenario/{1}'.format(self.url, self.testid)).json()['payload']
+        step_current = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         api_key = "valid_api_key"
         # Set testing scenario
         scenario = {"time_period":self.test_time_period,
                     "electricity_price":"dynamic"}
         # Set test case scenario
-        y = requests.put("{0}/scenario".format(self.url),
+        y = requests.put("{0}/scenario/{1}".format(self.url, self.testid),
                          data=scenario).json()["payload"]["time_period"]
         # Set step so doesn't take too long
-        requests.put('{0}/step'.format(self.url), data={'step':86400})
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':86400})
         # Simulation Loop
         while y:
             # Compute control signal
             u = {}
             # Advance simulation with control signal but stop after one iteration
-            y = requests.post("{0}/advance".format(self.url), data=u).json()["payload"]
+            y = requests.post("{0}/advance/{1}".format(self.url, self.testid), data=u).json()["payload"]
             y = False
-        res = requests.post("{0}/submit".format(self.url), data={"api_key": api_key,
-                                                            "tag1":"baseline",
-                                                            "tag2":"unit_test",
-                                                            "unit_test":"True"})
-        self.compare_error_code(res, "Invalid time run in submit request did not return a 500 error.", code_ref=500)
+        #res = requests.post("{0}/submit/{1}".format(self.url, self.testid), data={"api_key": api_key,
+        #                                                    "tag1":"baseline",
+        #                                                    "tag2":"unit_test",
+        #                                                    "unit_test":"True"})
+        #self.compare_error_code(res, "Invalid time run in submit request did not return a 500 error.", code_ref=500)
         # Continue simulation Loop
         y = True
         while y:
             # Compute control signal
             u = {}
             # Advance simulation to end of time period scenario
-            y = requests.post("{0}/advance".format(self.url), data=u).json()["payload"]
+            y = requests.post("{0}/advance/{1}".format(self.url, self.testid), data=u).json()["payload"]
         # Test invalid tag number
-        res = requests.post("{0}/submit".format(self.url), data={"api_key": api_key,
-                                                            "tag1":"1", "tag2":"2", "tag3":"3",
-                                                            "tag4":"4", "tag5":"5", "tag6":"6",
-                                                            "tag7":"7", "tag8":"2", "tag9":"3",
-                                                            "tag10":"1", "tag11":"2",
-                                                            "unit_test":"True"})
-        self.compare_error_code(res, "Invalid tag number in submit request did not return a 400 error.")
+        #res = requests.post("{0}/submit/{1}".format(self.url, self.testid), data={"api_key": api_key,
+        #                                                    "tag1":"1", "tag2":"2", "tag3":"3",
+        #                                                    "tag4":"4", "tag5":"5", "tag6":"6",
+        #                                                    "tag7":"7", "tag8":"2", "tag9":"3",
+        #                                                    "tag10":"1", "tag11":"2",
+        #                                                    "unit_test":"True"})
+        #self.compare_error_code(res, "Invalid tag number in submit request did not return a 400 error.")
         # Return scenario and step to original
-        requests.put('{0}/scenario'.format(self.url), data=scenario_current)
-        requests.put('{0}/step'.format(self.url), data={'step':step_current})
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data=scenario_current)
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step':step_current})
 
 class partialTestTimePeriod(partialChecks):
     '''Partial class for testing the time periods for each test case
@@ -1021,12 +1018,12 @@ class partialTestTimePeriod(partialChecks):
         '''
 
         # Set time period scenario
-        requests.put('{0}/scenario'.format(self.url), data={'time_period':time_period})
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data={'time_period':time_period})
         # Simulation Loop
         y = 1
         while y:
             # Advance simulation
-            y = requests.post('{0}/advance'.format(self.url), data={}).json()['payload']
+            y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data={}).json()['payload']
         # Check results
         df = self.results_to_df(self.points_check, -np.inf, np.inf, self.url)
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'results_{0}.csv'.format(time_period))
@@ -1034,15 +1031,15 @@ class partialTestTimePeriod(partialChecks):
         # For each price scenario
         for price_scenario in ['constant', 'dynamic', 'highly_dynamic']:
             # Set scenario
-            requests.put('{0}/scenario'.format(self.url), data={'electricity_price':price_scenario})
+            requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data={'electricity_price':price_scenario})
             # Report kpis
-            res_kpi = requests.get('{0}/kpi'.format(self.url)).json()['payload']
+            res_kpi = requests.get('{0}/kpi/{1}'.format(self.url, self.testid)).json()['payload']
             # Check kpis
             df = pd.DataFrame.from_dict(res_kpi, orient='index', columns=['value'])
             df.index.name = 'keys'
             ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'kpis_{0}_{1}.csv'.format(time_period, price_scenario))
             self.compare_ref_values_df(df, ref_filepath)
-        requests.put('{0}/scenario'.format(self.url), data={'electricity_price':'constant'})
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data={'electricity_price':'constant'})
 
 class partialTestSeason(partialChecks):
     '''Partial class for testing the time periods for each test case
@@ -1074,25 +1071,25 @@ class partialTestSeason(partialChecks):
             raise ValueError('Season {0} unknown.'.format(season))
         length = 48*3600
         # Initialize test case
-        requests.put('{0}/initialize'.format(self.url), data={'start_time':start_time, 'warmup_period':0})
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':start_time, 'warmup_period':0})
         # Get default simulation step
-        step_def = requests.get('{0}/step'.format(self.url)).json()['payload']
+        step_def = requests.get('{0}/step/{1}'.format(self.url, self.testid)).json()['payload']
         # Simulation Loop
         for i in range(int(length/step_def)):
             # Advance simulation
-            requests.post('{0}/advance'.format(self.url), data={}).json()['payload']
-        requests.put('{0}/scenario'.format(self.url), data={'electricity_price':'constant'})
+            requests.post('{0}/advance/{1}'.format(self.url, self.testid), data={}).json()['payload']
+        requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data={'electricity_price':'constant'})
         # Check results
-        points = self.get_all_points(self.url)
+        points = self.get_all_points()
         df = self.results_to_df(points, start_time, start_time+length, self.url)
         ref_filepath = os.path.join(get_root_path(), 'testing', 'references', self.name, 'results_{0}.csv'.format(season))
         self.compare_ref_timeseries_df(df,ref_filepath)
         # For each price scenario
         for price_scenario in ['constant', 'dynamic', 'highly_dynamic']:
             # Set scenario
-            requests.put('{0}/scenario'.format(self.url), data={'electricity_price':price_scenario})
+            requests.put('{0}/scenario/{1}'.format(self.url, self.testid), data={'electricity_price':price_scenario})
             # Report kpis
-            res_kpi = requests.get('{0}/kpi'.format(self.url)).json()['payload']
+            res_kpi = requests.get('{0}/kpi/{1}'.format(self.url, self.testid)).json()['payload']
             # Check kpis
             df = pd.DataFrame.from_dict(res_kpi, orient='index', columns=['value'])
             df.index.name = 'keys'

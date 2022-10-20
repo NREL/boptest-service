@@ -20,6 +20,7 @@ def run(plot=False):
 
     Parameters
     ----------
+    testid : A unique idenifier of the test.
     plot : bool, optional
         True to plot timeseries results.
         Default is False.
@@ -50,7 +51,8 @@ def run(plot=False):
 
     # RUN THE CONTROL TEST
     # --------------------
-    kpi, df_res, custom_kpi_result, forecasts = control_test(control_module,
+    kpi, df_res, custom_kpi_result, forecasts = control_test("testcase2",
+                                                             control_module,
                                                              start_time=start_time,
                                                              warmup_period=warmup_period,
                                                              length=length,
