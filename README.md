@@ -1,4 +1,5 @@
 
+
 # BOPTEST-Service
 
 This software reformulates [BOPTEST](https://github.com/ibpsa/project1-boptest) into a web based software as a service architecture, which enables BOPTEST to support multiple clients and multiple simultaneous tests at a large scale. This is a containerized architecture that can be deployed on a personal computer, but is especially designed for deployment on commercial cloud computing environments such as AWS. For details about the BOPTEST project, refer to the project [homepage](https://boptest.net).
@@ -24,6 +25,28 @@ A deployment of `BOPTEST-Service` is available at https://api.boptest.net
 
 4) In a separate process, use the test case API defined below to interact with the test case using your test controller.  Alternatively, view and run an example test controller as [described below](https://github.com/NREL/boptest-service#running-tests).
 5) Shutdown the test case by the command ``docker-compose down`` executed in the root directory of this repository.
+
+
+# BOPTEST-Service Specific APIs
+## APIs for Regular user 
+
+| Interaction                                                           | Request                                                   |
+|-----------------------------------------------------------------------|-----------------------------------------------------------|
+| List available test cases.                                |  GET `testcases` |
+| Check if specific test case is in list of available test cases. Returns status code of `200` (OK) if found, `404` if not found.                                 |  GET `testcases/{testcase_name}` |
+| Select a test case and begin a new test. A unique ``testid`` will be returned.                                |  POST ``testcases/{testcase_name}/select`` |
+| Stop a running test.                                                   |  PUT ``stop/{testid}`` |
+
+## APIs for Admin users
+
+| Interaction                                                           | Request                                                   |
+|-----------------------------------------------------------------------|-----------------------------------------------------------|
+| Get form data for submit API.                                |  GET ``/testcases/{testcase_name}/post-form`` |
+| Delete a test case.                                |  DELETE ``/testcases/{testcase_name}`` |
+
+
+
+
 # Running Tests
 
 Testing is based on the BOPTEST [test suite](https://github.com/NREL/boptest-service/tree/develop/boptest/testing) with small adaptations to conform to the BOPTEST-Service API. Follow the [README](https://github.com/NREL/boptest-service/blob/develop/boptest/testing/README.md) for more information.
