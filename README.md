@@ -13,25 +13,6 @@ A deployment of `BOPTEST-Service` is available at https://api.boptest.net
 
 Clicking [this link](https://colab.research.google.com/github/NREL/boptest-service/blob/documentation_readme_changes/docs/Introduction_to_the_BOPTEST_framework.ipynb) will take you to an interactive tutorial that will help you get familiar with both core BOPTEST APIs and BOPTEST-service APIs. Have fun! 
 
-
-# Building and Running on a Personal Computer
-1) Download this repository: clone this repo to your preferred location with 
-
- * ``git clone https://github.com/NREL/boptest-service.git {preferred_location}`` 
- 
-  where `{preferred_location}` is where you want to clone the repo to. 
-  
-2) Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
-
-3) To build, use the following command within the root directory of the extracted software:
-
-  * ``docker-compose up web worker provision``
-
-4) In a separate process, use the core [BOPTEST APIs](https://github.com/ibpsa/project1-boptest/tree/boptest-service#test-case-restful-api) as well as [BOPTEST-service APIs](https://github.com/NREL/boptest-service/tree/documentation_readme_changes#boptest-service-specific-apis) to interact with the test case using your test controller.  
-Alternatively, view and run an example test controller as [described below](https://github.com/NREL/boptest-service#running-tests).
-5) Shutdown the test case by the command ``docker-compose down`` executed in the root directory of this repository.
-
-
 # BOPTEST-Service Specific APIs
 ## APIs for the regular user 
 
@@ -50,6 +31,23 @@ Alternatively, view and run an example test controller as [described below](http
 | Delete a test case.                                |  DELETE ``/testcases/{testcase_name}`` |
 
 
+
+# Building and Running on a Personal Computer
+1) Download this repository: clone this repo to your preferred location with 
+
+ * ``git clone https://github.com/NREL/boptest-service.git {preferred_location}`` 
+ 
+  where `{preferred_location}` is where you want to clone the repo to. 
+  
+2) Install [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/).
+
+3) To build, use the following command within the root directory of the extracted software:
+
+  * ``docker-compose up web worker provision``
+
+4) In a separate process, use the core [BOPTEST APIs](https://github.com/ibpsa/project1-boptest/tree/boptest-service#test-case-restful-api) as well as [BOPTEST-service APIs](https://github.com/NREL/boptest-service/tree/documentation_readme_changes#boptest-service-specific-apis) to interact with the test case using your test controller.  
+Alternatively, view and run an example test controller as [described below](https://github.com/NREL/boptest-service#running-tests).
+5) Shutdown the test case by the command ``docker-compose down`` executed in the root directory of this repository.
 
 
 # Running Tests
