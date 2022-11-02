@@ -9,7 +9,7 @@ The canonical BOPTEST source code is incorporated into this repository as a git 
 
 A deployment of `BOPTEST-Service` is available at https://api.boptest.net
 
-# Getting Started as a User
+# Getting Started
 
 Clicking [this link](https://colab.research.google.com/github/NREL/boptest-service/blob/documentation_readme_changes/docs/Introduction_to_the_BOPTEST_framework.ipynb) will take you to an interactive tutorial that will help you get familiar with both core BOPTEST APIs and BOPTEST-service APIs. Have fun! 
 
