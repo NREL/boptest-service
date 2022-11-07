@@ -21,10 +21,12 @@ services:
       context: .
       args:
         - NODE_ENV
+      target: debug
     image: ${WEB_REGISTRY_URI}:latest
     ports:
       - "80:80"
       - "29043:29043"
+      - "9229:9229"
     environment:
       - NODE_ENV
       - AWS_ACCESS_KEY_ID
