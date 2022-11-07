@@ -11,7 +11,7 @@ A deployment of `BOPTEST-Service` is available at https://api.boptest.net
 
 # Getting Started
 
-Clicking [this link](https://colab.research.google.com/github/NREL/boptest-service/blob/documentation_readme_changes/docs/Introduction_to_the_BOPTEST_framework.ipynb) will take you to an interactive tutorial that will help you get familiar with both core BOPTEST APIs and BOPTEST-service APIs. Have fun! 
+Clicking [this link](https://github.com/NREL/boptest-service/blob/documentation_readme_changes/docs/Introduction_to_BOPTEST_Service_APIs.ipynb) will take you to an interactive tutorial that will help you get familiar with both core BOPTEST APIs and BOPTEST-service APIs. Have fun! 
 
 # BOPTEST-Service Specific APIs
 ## APIs for the regular user 
