@@ -16,12 +16,12 @@ Clicking [this link](https://github.com/NREL/boptest-service/blob/documentation_
 # BOPTEST-Service Specific APIs
 ## APIs for the regular user 
 
-| Interaction                                                           | Request                                                   |
-|-----------------------------------------------------------------------|-----------------------------------------------------------|
-| List available test cases.                                |  GET `testcases` |
-| Check if specific test case is in list of available test cases. Returns status code of `200` (OK) if found, `404` if not found.                                 |  GET `testcases/{testcase_name}` |
-| Select a test case and begin a new test. A unique ``testid`` will be returned.                                |  POST ``testcases/{testcase_name}/select`` |
-| Stop a running test.                                                   |  PUT ``stop/{testid}`` |
+| Interaction                                                                                                                     | Request                                   | Notebook Links |
+|---------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|------|
+| List available test cases.                                                                                                      | GET `testcases`                           | [Link to cell](https://colab.research.google.com/drive/19FUhbf2me_M67nIB7lOk9dKkZKmUTll9#scrollTo=aiKANXkxIhUB&line=1&uniqifier=1) |
+| Check if specific test case is in list of available test cases. Returns status code of `200` (OK) if found, `404` if not found. | GET `testcases/{testcase_name}`           | [Link to cell](https://colab.research.google.com/drive/19FUhbf2me_M67nIB7lOk9dKkZKmUTll9#scrollTo=u7ixmyR3OiMT&line=5&uniqifier=1) |
+| Select a test case and begin a new test. A unique ``testid`` will be returned.                                                  | POST ``testcases/{testcase_name}/select`` | [Link to cell](https://colab.research.google.com/drive/19FUhbf2me_M67nIB7lOk9dKkZKmUTll9#scrollTo=G8f9m6M_NTkg&line=2&uniqifier=1) |
+| Stop a running test.                                                                                                            | PUT ``stop/{testid}``                     | [Link to cell](https://colab.research.google.com/drive/19FUhbf2me_M67nIB7lOk9dKkZKmUTll9#scrollTo=VLsLSESXaooJ&line=2&uniqifier=1) |
 
 ## APIs for admin users
 
