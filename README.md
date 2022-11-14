@@ -5,7 +5,7 @@ This software reformulates [BOPTEST](https://github.com/ibpsa/project1-boptest) 
 The canonical BOPTEST source code is incorporated into this repository as a git subtree located at `<project-root>/boptest` and used under the terms of the license located at `<project-root>/boptest/license.md`. 
 
 ```mermaid
-graph LR
+flowchart LR
     A[API Client] <--> B[Web Frontend]
     subgraph cloud [Cloud Deployment]
             B <--> C[(Database)]
