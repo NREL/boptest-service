@@ -22,13 +22,13 @@ flowchart LR
 
 # Getting Started
 
-A demonstration of using the BOPTEST API is available in the form of a short [interactive tutorial](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/docs/Introduction_to_BOPTEST_Service_APIs.ipynb). This tutorial leverages a publicaly available deployment of `boptest-service` which can be reached at https://api.boptest.net.
+A simple demonstration of using the BOPTEST API is available in the form of a short [interactive tutorial](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/docs/Introduction_to_BOPTEST_Service_APIs.ipynb). This tutorial leverages a publicly available deployment of BOPTEST-Service, which can be reached at https://api.boptest.net.
 
-A more in depth tutorial has been developed to support a number of BOPTEST workshops and is available [here](https://github.com/NREL/boptest-service/blob/develop/boptest/docs/workshops/BS21Workshop_20210831/Introduction_to_the_BOPTEST_framework.ipynb).
+A comprehensive tutorial has also been developed to illustrate example use cases and is available [here](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/boptest/docs/workshops/BS21Workshop_20210831/Introduction_to_the_BOPTEST_framework.ipynb).
 
 # OpenAI Gym Interface
 
-An [OpenAI-Gym](https://github.com/openai/gym) environment for BOPTEST is [availble](https://github.com/ibpsa/project1-boptest-gym), including an [interfactive tutorial](https://colab.research.google.com/github/ibpsa/project1-boptest-gym/blob/master/docs/tutorials/CCAI%20Summer%20School%202022/Tutorial_2_Building_Control_with_RL_using_BOPTEST.ipynb).
+An [OpenAI-Gym](https://github.com/openai/gym) environment for BOPTEST is [available](https://github.com/ibpsa/project1-boptest-gym), including an [interactive tutorial](https://colab.research.google.com/github/ibpsa/project1-boptest-gym/blob/master/docs/tutorials/CCAI%20Summer%20School%202022/Tutorial_2_Building_Control_with_RL_using_BOPTEST.ipynb).
 
 # BOPTEST-Service APIs
 
