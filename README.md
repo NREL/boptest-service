@@ -44,13 +44,13 @@ The core BOPTEST APIs are [documented](https://github.com/ibpsa/project1-boptest
 # Building and Running on a Personal Computer
 1) Clone this repository.
 
- * ``git clone https://github.com/NREL/boptest-service.git`` 
+``git clone https://github.com/NREL/boptest-service.git`` 
   
 2) Install [Docker](https://docs.docker.com/get-docker/).
 
 3) Use Docker to build and run BOPTEST-Service.
 
-  * ``docker compose up web worker provision``
+``docker compose up web worker provision``
 
 4) In a separate process, use the core [BOPTEST APIs](https://github.com/ibpsa/project1-boptest/tree/boptest-service#test-case-restful-api) as well as [BOPTEST-service APIs](https://github.com/NREL/boptest-service/tree/documentation_readme_changes#boptest-service-specific-apis) to interact with the test case using your test controller.  
 
