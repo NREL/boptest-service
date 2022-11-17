@@ -49,3 +49,34 @@ The web server sends requests by publishing to a requests channel. The request c
 The worker process listens for any request by being subscribed to this channel. 
 
 Once the worker process has a response ready, it publishes the response to a response channel. The response channel has a name in the format \<testid>:response. For example:  `85e01d70-8755-41ab-a229-3c01f6db4ea1:response`. The web server is subscribed to this response channel and listens till it gets the correct message.
+
+
+
+## Newly proposed structure:
+
+1. Structure of the hash
+
+    \> HGETALL  `users:<user_id>:tests`  which is O(N) where N is the size of the hash
+    1) "<test_id_1>" 
+    2) "{test_id_1_metadata_json_string}"
+    3) "<test_id_2>" 
+    4) "{test_id_2_metadata_json_string}"
+
+2. Checking if a test is valid: use HEXISTS which is O(1)
+
+    \> HEXISTS  `users:<user_id>:tests <test_id_1>` 
+    (integer) 1
+    \> HEXISTS  `users:<user_id>:tests <test_id_2>` 
+    (integer) 0
+
+3. Get all tests: either query from HGETALL or use HKEYS which is O(N) where N is the size of the hash. 
+
+    \> HKEYS `users:<user_id>:tests` 
+        1) "<test_id_1>" 
+        2) "<test_id_2>"
+
+4. Get number of current tests of user: HLEN which is O(1)
+
+    \> HLEN `users:<user_id>:tests` 
+    (integer) 2
+
