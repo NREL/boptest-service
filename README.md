@@ -52,7 +52,7 @@ The core BOPTEST APIs are [documented](https://github.com/ibpsa/project1-boptest
 
 ``docker compose up web worker provision``
 
-4) In a separate process, use the core [BOPTEST APIs](https://github.com/ibpsa/project1-boptest/tree/boptest-service#test-case-restful-api) as well as [BOPTEST-service APIs](https://github.com/NREL/boptest-service/tree/documentation_readme_changes#boptest-service-specific-apis) to interact with the test case using your test controller.  
+4) In a separate process, use the core [BOPTEST APIs](https://github.com/ibpsa/project1-boptest/tree/boptest-service#test-case-restful-api) as well as [BOPTEST-service APIs](https://github.com/NREL/boptest-service/blob/develop/README.md#boptest-service-apis) to interact with the test case using your test controller.  
 
 5) Shutdown the test case by the command ``docker compose down`` executed in the root directory of this repository.
 
