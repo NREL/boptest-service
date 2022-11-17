@@ -1,6 +1,6 @@
 # BOPTEST-Service
 
-This software reformulates [BOPTEST](https://github.com/ibpsa/project1-boptest) into a web based software as a service, which enables BOPTEST to support multiple clients and multiple simultaneous tests at a large scale. This is a containerized architecture that can be deployed on a personal computer, however the software is targetd at commercial cloud computing environments such as AWS. For details about BOPTEST, refer to the project [homepage](https://boptest.net).
+This software reformulates [BOPTEST](https://github.com/ibpsa/project1-boptest) into a web based software as a service, which enables BOPTEST to support multiple clients and multiple simultaneous tests at a large scale. This is a containerized architecture that can be deployed on a personal computer, however the software is designed for commercial cloud computing environments such as AWS. For details about BOPTEST, refer to the project [homepage](https://boptest.net).
 
 The canonical BOPTEST source code is incorporated into this repository as a git subtree located at `<project-root>/boptest` and used under the terms of the license located at `<project-root>/boptest/license.md`. 
 
