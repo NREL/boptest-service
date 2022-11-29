@@ -37,6 +37,7 @@ services:
       - S3_BUCKET
       - REGION
       - SERVICE_TIMEOUT
+      - BOPTEST_DASHBOARD_SERVER
     depends_on:
       - redis
       - goaws
