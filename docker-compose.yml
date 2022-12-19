@@ -33,9 +33,12 @@ services:
       - BOPTEST_REGION
       - BOPTEST_TIMEOUT
       - BOPTEST_DASHBOARD_SERVER
-      - BOPTEST_SUPER_USERS
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+      - BOPTEST_TEST_USERNAME # Only for testing
+      - BOPTEST_TEST_KEY # Only for testing
+      - BOPTEST_TEST_PRIVILEGED_USERNAME # Only for testing
+      - BOPTEST_TEST_PRIVILEGED_KEY # Only for testing
     depends_on:
       - redis
       - goaws
@@ -106,3 +109,7 @@ services:
       - BOPTEST_SERVER
       - BOPTEST_DASHBOARD_API_KEY
       - BOPTEST_DASHBOARD_USERNAME
+      - BOPTEST_TEST_USERNAME
+      - BOPTEST_TEST_KEY
+      - BOPTEST_TEST_PRIVILEGED_USERNAME
+      - BOPTEST_TEST_PRIVILEGED_KEY
