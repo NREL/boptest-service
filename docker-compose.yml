@@ -12,7 +12,7 @@ services:
     environment:
       - BOPTEST_SERVER
       - BOPTEST_DASHBOARD_SERVER
-      - BOPTEST_DASHBOARD_API_KEY
+      - BOPTEST_DASHBOARD_API_KEY=${BOPTEST_TEST_PRIVILEGED_KEY}
     volumes:
       - ./:/usr/src/boptest
   web: # main haystack application
