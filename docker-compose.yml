@@ -36,6 +36,7 @@ services:
       - BOPTEST_DASHBOARD_SERVER
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
+      - BOPTEST_USE_TEST_USERS # If "true" the following user accounts will be used for testing
       - BOPTEST_TEST_USERNAME # Only for testing
       - BOPTEST_TEST_KEY # Only for testing
       - BOPTEST_TEST_PRIVILEGED_USERNAME # Only for testing
@@ -114,3 +115,4 @@ services:
       - BOPTEST_TEST_KEY
       - BOPTEST_TEST_PRIVILEGED_USERNAME
       - BOPTEST_TEST_PRIVILEGED_KEY
+      - BOPTEST_USE_TEST_USERS
