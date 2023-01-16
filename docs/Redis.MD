@@ -1,82 +1,26 @@
+# Redis
 
+BOPTEST-Service currently uses Redis for two purposes.
 
-# Redis Caching
-
-BOPTEST-Service currently uses Redis as a database for:
 1. Storing test metadata.
-2. Storing the current values of test control points. 
+2. A pub/sub message bus to communicate with workers. 
 
-The purpose of this document is to define the organization of object keys used in Redis. We define the organizational structure for both storing test metadata as well as for storing the values of control points. Redis is not intrinsically hierarchical (beyond the hash key field:value pair layer), however `:` characters used in key names are conventionally treated as delimiters, and BOPTEST-Service uses this delimiter for organizational purposes.
+## Test Metadata:
 
-## Test metadata:
+A hash under the key `tests:${testid}` is used to store test metadata.
 
-Currently, for each test, REDIS stores the following metadata as a hash with the test-id as key and testcase name and current status as values. 
-For example:
+| Key                                      | Field       | Value
+| ---------------------------------------- | -------------------------------------------
+| `tests:${testid}`                        | `status`    | `Queued | Running`
+| `tests:${testid}`                        | `timestamp` | Epoch seconds when test is queued
+| `tests:${testid}`                        | `user`      | The OAuth user "sub", or undefined for anonymous tests
 
-    "9028197e-1d18-4a58-a6ba-96660c50fb7a" = {status:"Running", testcaseid:"testcase_1"}
+Tests that are started by an authenticated user are stored in a set associated with the user.
 
-We intend to change the structure of the key to include the user-id, as seen here:
+| Key                                      |  Value
+| ---------------------------------------- | -------------------------------------------
+| `users:${userSub}:tests`                 | `[testid1, testid2, ...]`
 
-    users:john:tests:"9028197e-1d18-4a58-a6ba-96660c50fb7a" = {status:"Running", testcaseid:"testcase_1"}
+## Pub/Sub Messages
 
- 
-This will help easily identify which user started each test just by the key. 
-
-**What is the effect of key length on performance?**
-For our proposed key-length, nothing significant. [We run tests](https://colab.research.google.com/drive/11puTp6noWgdqJgo51Dx42VyazmiZwgbf?usp=sharing) for the current and proposed keys for hset and hget commands. 10^9 keys are hset and hget with values that are like current BOPTEST metadata. We don't observe any significant difference in performance.  
-
-
-## User specific test IDs
-
-We also intend to make a new REDIS set which only contains the tests associated with each user. 
-
-    users:john:tests =  
-    [  
-    "9028197e-1d18-4a58-a6ba-96660c50fb7a",  
-    "9028197e-1d18-4a58-a6ba-96660c50fb7b",  
-    ]
-
-**Why not query from the metadata keys?** 
-REDIS will allow us to query all the tests associated with the user from the keys of the metadata hash. This can be done by setting appropriate patterns and using the [KEYS](https://redis.io/commands/keys/) command. But this is an O(N) operation, where N is the number of all tests of all users. 
-
-Creating a separate set for each user's test_id's helps us query all the test_id's with an [SMEMBERS](https://redis.io/commands/smembers/) O(N) command, where N is the number of the user's tests, which could be much faster, depending on the size of the set. 
-
-## Test control points and associated metadata
-
-Control points, each step of the simulation, and the metadata associated with each of the control points are communicated between the web server and the worker processes via the Redis PubSub system. 
-
-The web server sends requests by publishing to a requests channel. The request channel is named in the format \<testid>:request. For example: `85e01d70-8755-41ab-a229-3c01f6db4ea1:request`.
-The worker process listens for any request by being subscribed to this channel. 
-
-Once the worker process has a response ready, it publishes the response to a response channel. The response channel has a name in the format \<testid>:response. For example:  `85e01d70-8755-41ab-a229-3c01f6db4ea1:response`. The web server is subscribed to this response channel and listens till it gets the correct message.
-
-
-
-## Newly proposed structure:
-
-1. Structure of the hash
-
-    \> HGETALL  `users:<user_id>:tests`  which is O(N) where N is the size of the hash
-    1) "<test_id_1>" 
-    2) "{test_id_1_metadata_json_string}"
-    3) "<test_id_2>" 
-    4) "{test_id_2_metadata_json_string}"
-
-2. Checking if a test is valid: use HEXISTS which is O(1)
-
-    \> HEXISTS  `users:<user_id>:tests <test_id_1>` 
-    (integer) 1
-    \> HEXISTS  `users:<user_id>:tests <test_id_2>` 
-    (integer) 0
-
-3. Get all tests: either query from HGETALL or use HKEYS which is O(N) where N is the size of the hash. 
-
-    \> HKEYS `users:<user_id>:tests` 
-        1) "<test_id_1>" 
-        2) "<test_id_2>"
-
-4. Get number of current tests of user: HLEN which is O(1)
-
-    \> HLEN `users:<user_id>:tests` 
-    (integer) 2
-
+See notes in `web/server/src/lib/messaging.js`.
