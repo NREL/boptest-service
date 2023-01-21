@@ -29,14 +29,14 @@ jobs:
 
       - name: Build and run stack
         run: |
-          docker-compose -f docker-compose.yml up --build -d
+          docker compose -f docker-compose.yml up --build -d
 
       - name: dump docker logs
         uses: jwalton/gh-docker-logs@v1
 
       - name: Upload test cases to minio
         run: |
-          docker-compose run --no-deps provision python3 -m boptest_submit --shared --path ./boptest/testcases/testcase1
+          docker compose run --no-deps provision
           curl http://localhost/testcases
 
       - name: Wait for web server
