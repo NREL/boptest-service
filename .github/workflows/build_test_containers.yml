@@ -47,7 +47,7 @@ jobs:
           timeout: 120000
           interval: 500
 
-      - name: Run test cases 
+      - name: Run example
         run: |
           python --version
           pip install requests matplotlib numpy pandas
@@ -55,6 +55,10 @@ jobs:
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
           # Storing PYTHONPATH above doesn't work for python so setting it below at run 
           cd boptest && PYTHONPATH=$PWD python examples/python/testcase1.py 
+
+      - name: Run tests
+        run: |
+           docker compose run --no-deps test
 
       - name: Dump docker logs on failure
         if: failure()
