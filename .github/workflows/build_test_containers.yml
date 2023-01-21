@@ -36,7 +36,7 @@ jobs:
 
       - name: Upload test cases to minio
         run: |
-          docker-compose run --no-deps provision python3 -m boptest_submit ./boptest/testcases/testcase1
+          docker-compose run --no-deps provision python3 -m boptest_submit --shared --path ./boptest/testcases/testcase1
           curl http://localhost/testcases
 
       - name: Wait for web server
