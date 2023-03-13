@@ -29,25 +29,20 @@ jobs:
 
       - name: Build and run stack
         run: |
-          docker-compose -f docker-compose.yml up --build -d
+          docker compose build
+          docker compose up -d web worker
 
       - name: dump docker logs
         uses: jwalton/gh-docker-logs@v1
 
       - name: Upload test cases to minio
         run: |
-          docker-compose run --no-deps provision python3 -m boptest_submit ./boptest/testcases/testcase1
+          # The provision script will wait for the web service to be available,
+          # so there is no need for an external wait-for-it script
+          docker compose run --no-deps provision
           curl http://localhost/testcases
 
-      - name: Wait for web server
-        uses: nev7n/wait_for_response@v1
-        with:
-          url: "http://localhost/testcases"
-          responseCode: 200
-          timeout: 120000
-          interval: 500
-
-      - name: Run test cases 
+      - name: Run example
         run: |
           python --version
           pip install requests matplotlib numpy pandas
@@ -55,6 +50,10 @@ jobs:
           echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
           # Storing PYTHONPATH above doesn't work for python so setting it below at run 
           cd boptest && PYTHONPATH=$PWD python examples/python/testcase1.py 
+
+      - name: Run tests
+        run: |
+           docker compose run --no-deps test
 
       - name: Dump docker logs on failure
         if: failure()

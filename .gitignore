@@ -1,3 +1,4 @@
+.env
 *.pyc
 *.txt
 !worker/requirements/*.txt
