@@ -183,7 +183,8 @@ def control_test(testcase, control_module='', start_time=0, warmup_period=0, len
         # If controller needs a forecast, get the forecast data and provide the forecast to the controller
         if controller.use_forecast:
             # Retrieve forecast from restful API
-            forecast_data = check_response(requests.get('{0}/forecast/{1}'.format(url, testid)))
+            forecast_parameters = controller.get_forecast_parameters()
+            forecast_data = check_response(requests.put('{0}/forecast/{1}'.format(url, testid), data=forecast_parameters))
             # Use forecast data to update controller-specific forecast data
             forecasts = controller.update_forecasts(forecast_data, forecasts)
         else:
@@ -226,12 +227,7 @@ def control_test(testcase, control_module='', start_time=0, warmup_period=0, len
     # Get result data
     points = list(measurements.keys()) + list(inputs.keys())
     df_res = pd.DataFrame()
-    for point in points:
-        res = check_response(requests.put('{0}/results/{1}'.format(url, testid), data={'point_name': point, 'start_time': start_time, 'final_time': final_time}))
-        df_res = pd.concat((df_res, pd.DataFrame(data=res[point], index=res['time'], columns=[point])), axis=1)
-    df_res.index.name = 'time'
-
-    # Stop the test
-    requests.put('{0}/stop/{1}'.format(url, testid))
-
+    res = check_response(requests.put('{0}/results/{1}'.format(url, testid), data={'point_names': points, 'start_time': start_time, 'final_time': final_time}))
+    df_res = pd.DataFrame.from_dict(res)
+    df_res = df_res.set_index('time')
     return kpi, df_res, custom_kpi_result, forecasts

@@ -369,7 +369,11 @@ class API(unittest.TestCase, utilities.partialTestAPI):
         self.url = API.url
         self.step_ref = 60.0
         self.test_time_period = 'test_day'
+        #<u_variable>_activate is meant to be 0 for the test_advance_false_overwrite API test
         self.testid = API.testid
+        self.input = {'oveAct_activate': 0, 'oveAct_u': 1500}
+        self.measurement = 'PHea_y'
+        requests.put('{0}/step/{1}'.format(self.url, self.testid), data={'step': self.step_ref})
 
     @classmethod
     def tearDownClass(cls):

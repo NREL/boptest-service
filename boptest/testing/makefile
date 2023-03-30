@@ -87,6 +87,7 @@ test_%:
 	make -C ../ provision TESTCASE=$*
 # Python and checks
 	cd .. && python testing/test_$*.py
+	python report.py
 
 test_parser:
 	make run_jm
@@ -96,6 +97,8 @@ test_parser:
 	docker cp ${IMG_NAME}:/usr/local/testing/references/parser ./references
 	docker cp ${IMG_NAME}:/usr/local/testing/test_parser.log ./test_parser.log
 	make stop_jm
+# Report test results
+	python report.py
 
 test_data:
 # Compile testcase model
@@ -117,6 +120,8 @@ test_data:
 	docker cp ${IMG_NAME}:/usr/local/testing/test_data.log ./test_data.log
 # Stop jm docker container
 	make stop_jm
+# Report test results
+	python report.py
 
 test_forecast:
 # Compile testcase model
@@ -136,6 +141,8 @@ test_forecast:
 	docker cp ${IMG_NAME}:/usr/local/testing/test_forecast.log ./test_forecast.log
 # Stop jm docker container
 	make stop_jm
+# Report test results
+	python report.py
 
 test_kpis:
 # Compile testcase model
@@ -155,6 +162,8 @@ test_kpis:
 	docker cp ${IMG_NAME}:/usr/local/testing/test_kpis.log ./test_kpis.log
 # Stop jm docker container
 	make stop_jm
+# Report test results
+	python report.py
 
 test_readme_commands:
 # Test readme commands work right after instantiation of test case container
@@ -184,6 +193,7 @@ test_all:
 	make test_multizone_residential_hydronic
 	make test_singlezone_commercial_hydronic
 	make test_multizone_office_simple_air
+	make test_twozone_apartment_hydronic
 # Remove jm
 	make remove_jm_image
 # Remove boptest base image
