@@ -14,13 +14,13 @@ build_jm_image:
 	docker build --no-cache --rm -t ${IMG_NAME} .
 
 build_boptest_image:
-	cd .. && docker-compose build
+	cd .. && docker compose build
 
 remove_jm_image:
 	docker rmi ${IMG_NAME}
 
 remove_boptest_image:
-	cd .. && docker-compose down
+	cd .. && docker compose down
 
 run_jm:
 	$(COMMAND_RUN)
@@ -170,7 +170,7 @@ test_readme_commands:
 	curl http://127.0.0.1/measurements
 	curl http://127.0.0.1/forecast
 	curl http://127.0.0.1/advance -d '{"oveTSetRooHea_u":293.15,"oveTSetRooHea_activate":1, "oveTSetRooCoo_activate":1,"oveTSetRooCoo_u":298.15}' -H "Content-Type: application/json"
-	cd .. && TESTCASE=testcase2 docker-compose down
+	cd .. && TESTCASE=testcase2 docker compose down
 
 ###############################################################################
 

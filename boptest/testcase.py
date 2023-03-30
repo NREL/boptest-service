@@ -620,7 +620,6 @@ class TestCase(object):
 
     def get_results(self, point_names, start_time, final_time):
         '''Returns measurement and control input trajectories.
-
         Parameters
         ----------
         point_names: list
@@ -629,7 +628,6 @@ class TestCase(object):
             Start time of data to return in seconds.
         final_time : int or float
             Start time of data to return in seconds.
-
         Returns
         -------
         status: int
@@ -645,7 +643,6 @@ class TestCase(object):
              'var':[<var_data>]
             }
             Returns None if no variable can be found or a simulation error occurs.
-
         '''
 
         status = 200
@@ -667,21 +664,19 @@ class TestCase(object):
             return status, message, payload
         payload = {}
         try:
-            for point_name in point_names:
-                # Get correct points
-                if point_name in self.y_store.keys():
-                    payload[point_name] = self.y_store[point_name]
-                elif point_name in self.u_store.keys():
-                    payload[point_name] = self.u_store[point_name]
-                else:
-                    status = 400
-                    message = "Invalid point name {} in parameter point_names.  Check lists of available inputs and measurements.".format(point_name)
-                    logging.error(message)
-                    return status, message, None
-            if any(item in point_names for item in self.y_store.keys()):
+            # Get correct point
+            if point_name in self.y_store.keys():
+                payload[point_name] = self.y_store[point_name]
                 payload['time'] = self.y_store['time']
-            elif any(item in point_names for item in self.u_store.keys()):
+            elif point_name in self.u_store.keys():
+                payload[point_name] = self.u_store[point_name]
                 payload['time'] = self.u_store['time']
+            else:
+                status = 400
+                message = "Invalid value {} for parameter point_name.  Check lists of inputs and measurements.".format(point_name)
+                logging.error(message)
+                return status, message, None
+
             # Get correct time
             if payload and 'time' in payload:
                 # Find min and max time
@@ -714,8 +709,9 @@ class TestCase(object):
                 # Use found first and last time to find corresponding indecies
                 i1 = payload['time'].index(t1)
                 i2 = payload['time'].index(t2)+1
-                for key in (point_names +['time']):
+                for key in [point_name, 'time']:
                     payload[key] = payload[key][i1:i2]
+
         except:
             status = 500
             message = "Failed to query simulation results: {}".format(traceback.format_exc())

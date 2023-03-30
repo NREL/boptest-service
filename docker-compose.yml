@@ -10,9 +10,9 @@ services:
     depends_on:
       - web
     environment:
-      - BOPTEST_SUBMIT_URL
+      - BOPTEST_SERVER
       - BOPTEST_DASHBOARD_SERVER
-      - BOPTEST_DASHBOARD_API_KEY
+      - BOPTEST_DASHBOARD_API_KEY=${BOPTEST_TEST_PRIVILEGED_KEY}
     volumes:
       - ./:/usr/src/boptest
   web: # main haystack application
@@ -21,20 +21,26 @@ services:
       context: .
       args:
         - NODE_ENV
-    image: ${WEB_REGISTRY_URI}:latest
     ports:
       - "80:80"
       - "29043:29043"
     environment:
       - NODE_ENV
+      - BOPTEST_JOB_QUEUE_URL
+      - BOPTEST_INTERNAL_S3_URL
+      - BOPTEST_PUBLIC_S3_URL
+      - BOPTEST_S3_BUCKET
+      - BOPTEST_REDIS_HOST
+      - BOPTEST_REGION
+      - BOPTEST_TIMEOUT
+      - BOPTEST_DASHBOARD_SERVER
       - AWS_ACCESS_KEY_ID
       - AWS_SECRET_ACCESS_KEY
-      - JOB_QUEUE_URL
-      - S3_URL
-      - REDIS_HOST
-      - S3_BUCKET
-      - REGION
-      - SERVICE_TIMEOUT
+      - BOPTEST_USE_TEST_USERS # If "true" the following user accounts will be used for testing
+      - BOPTEST_TEST_USERNAME # Only for testing
+      - BOPTEST_TEST_KEY # Only for testing
+      - BOPTEST_TEST_PRIVILEGED_USERNAME # Only for testing
+      - BOPTEST_TEST_PRIVILEGED_KEY # Only for testing
     depends_on:
       - redis
       - goaws
@@ -75,20 +81,18 @@ services:
     build:
       dockerfile: worker/Dockerfile
       context: .
-    image: ${WORKER_REGISTRY_URI}:latest
     environment:
-      - AWS_ACCESS_KEY_ID
-      - AWS_SECRET_ACCESS_KEY
-      - JOB_QUEUE_URL
-      - LOGLEVEL=INFO
-      - NODE_ENV
-      - S3_URL
-      - REDIS_HOST
-      - S3_BUCKET
-      - REGION
+      - BOPTEST_JOB_QUEUE_URL
+      - BOPTEST_LOGLEVEL
+      - BOPTEST_INTERNAL_S3_URL
+      - BOPTEST_S3_BUCKET
+      - BOPTEST_REDIS_HOST
+      - BOPTEST_REGION
       - BOPTEST_DASHBOARD_SERVER
       - BOPTEST_DASHBOARD_API_KEY
-      - SERVICE_TIMEOUT
+      - BOPTEST_TIMEOUT
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY
     depends_on:
       - redis
       - goaws
@@ -97,8 +101,18 @@ services:
     image: redis
     ports:
       - "6379:6379"
-#  test:
-#    build: tests
-#    depends_on:
-#      - web
-#
+  test:
+    build:
+      dockerfile: test/Dockerfile
+      context: .
+    depends_on:
+      - web
+    environment:
+      - BOPTEST_SERVER
+      - BOPTEST_DASHBOARD_API_KEY
+      - BOPTEST_DASHBOARD_USERNAME
+      - BOPTEST_TEST_USERNAME
+      - BOPTEST_TEST_KEY
+      - BOPTEST_TEST_PRIVILEGED_USERNAME
+      - BOPTEST_TEST_PRIVILEGED_KEY
+      - BOPTEST_USE_TEST_USERS
