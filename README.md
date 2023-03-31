@@ -24,13 +24,7 @@ flowchart LR
 
 # Getting Started
 
-A simple demonstration of using the BOPTEST API is available in the form of a short [interactive tutorial](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/docs/Introduction_to_BOPTEST_Service_APIs.ipynb). This tutorial leverages a publicly available deployment of BOPTEST-Service, which can be reached at https://api.boptest.net.
-
-A comprehensive tutorial has also been developed to illustrate example use cases and is available [here](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/boptest/docs/workshops/BS21Workshop_20210831/Introduction_to_the_BOPTEST_framework.ipynb).
-
-# OpenAI Gym Interface
-
-An [OpenAI-Gym](https://github.com/openai/gym) environment for BOPTEST is [available](https://github.com/ibpsa/project1-boptest-gym), including an [interactive tutorial](https://colab.research.google.com/github/ibpsa/project1-boptest-gym/blob/master/docs/tutorials/CCAI%20Summer%20School%202022/Tutorial_2_Building_Control_with_RL_using_BOPTEST.ipynb).
+A simple demonstration of using the BOPTEST API is available in this [interactive tutorial](https://colab.research.google.com/github/NREL/boptest-service/blob/develop/docs/Introduction_to_BOPTEST_Service_APIs.ipynb). This tutorial leverages a publicly available deployment of BOPTEST-Service, which can be reached at https://api.boptest.net.
 
 # BOPTEST-Service APIs
 
@@ -52,6 +46,10 @@ The core BOPTEST APIs are [documented](https://github.com/ibpsa/project1-boptest
 | List tests for a user. (Auth required)                                                                                      | GET ``users/{username}/tests``                             |
 
 The family of the `select` APIs are used to choose a test case and begin a running test. Select returns a `testid` which is required by all APIs that interact with the test or provide test information.
+
+# OpenAI Gym Interface
+
+An [OpenAI-Gym](https://github.com/openai/gym) environment for BOPTEST is [available](https://github.com/ibpsa/project1-boptest-gym).
 
 # Building and Running on a Personal Computer
 1) Clone this repository.
