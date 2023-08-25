@@ -71,6 +71,7 @@ class API(unittest.TestCase, utilities.partialTestAPI):
         self.testid = API.testid
         self.input = {'hydronicSystem_oveTHea_activate':0, 'hydronicSystem_oveTHea_u':273.15+25}
         self.measurement = 'dayZon_reaTRooAir_y'
+        self.forecast_point = 'EmissionsBiomassPower'
 
 
     @classmethod

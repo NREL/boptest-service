@@ -144,8 +144,8 @@ class MinMax(unittest.TestCase):
         '''
 
         # Run test
-        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
-        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data={"oveTSetRooHea_activate":1,"oveTSetRooHea_u":273.15}).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), json={'start_time':0, 'warmup_period':0})
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), json={"oveTSetRooHea_activate":1,"oveTSetRooHea_u":273.15}).json()['payload']
         # Check kpis
         value = float(y['oveTSetRooHea_u'])
         self.assertAlmostEqual(value, 273.15+10, places=3)
@@ -156,8 +156,8 @@ class MinMax(unittest.TestCase):
         '''
 
         # Run test
-        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), data={'start_time':0, 'warmup_period':0})
-        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), data={"oveTSetRooHea_activate":1,"oveTSetRooHea_u":310.15}).json()['payload']
+        requests.put('{0}/initialize/{1}'.format(self.url, self.testid), json={'start_time':0, 'warmup_period':0})
+        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), json={"oveTSetRooHea_activate":1,"oveTSetRooHea_u":310.15}).json()['payload']
         # Check kpis
         value = float(y['oveTSetRooHea_u'])
         self.assertAlmostEqual(value, 273.15+35, places=3)
@@ -192,6 +192,7 @@ class API(unittest.TestCase, utilities.partialTestAPI):
         #<u_variable>_activate is meant to be 0 for the test_advance_false_overwrite API test
         self.input = {'oveTSetRooHea_activate': 0, 'oveTSetRooHea_u': 273.15 + 22}
         self.measurement = 'PFan_y'
+        self.forecast_point = 'EmissionsBiomassPower'
 
 if __name__ == '__main__':
     utilities.run_tests(os.path.basename(__file__))
