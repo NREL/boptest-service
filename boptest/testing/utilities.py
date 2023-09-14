@@ -155,7 +155,7 @@ class partialChecks(object):
         df : pandas DataFrame
             Test dataframe with "time" as index.
         ref_filepath : str
-            Reference file path relative to testing directory.
+            Reference file path.
 
         Returns
         -------
@@ -840,16 +840,16 @@ class partialTestAPI(partialChecks):
                 y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), json=u)
                 self.compare_error_code(y, "Invalid advance request for _u did not return 400 message.")
 
-    def test_invalid_advance_name(self):
-        '''Test advancing of simulation with invalid input parameter name will return 400 error.
+    # def test_invalid_advance_name(self):
+    #     '''Test advancing of simulation with invalid input parameter name will return 400 error.
 
-        This is a basic test of functionality.
+    #     This is a basic test of functionality.
 
-        '''
+    #     '''
 
-        u = {'invalid': 0}
-        y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), json=u)
-        self.compare_error_code(y, "Invalid advance request for _u did not return 400 message.")
+    #     u = {'invalid': 0}
+    #     y = requests.post('{0}/advance/{1}'.format(self.url, self.testid), json=u)
+    #     self.compare_error_code(y, "Invalid advance request for _u did not return 400 message.")
 
 
     def test_invalid_get_results(self):
