@@ -92,8 +92,10 @@ test_%_travis:
 	docker compose -f ../../docker-compose.yml run --no-deps provision python3 -m boptest_submit --shared --path ./boptest/testcases/$*
 # Run testcase tests
 	cd .. && python testing/test_$*.py $(ARG)
-# Stop testcase container
-	docker compose -f ../../docker-compose.yml down
+# Stop testcase container if it was not running when we started
+	if [ ${status} -ne 200 ]; then \
+		docker compose -f ../../docker-compose.yml down
+	fi
 
 # Generic test for all testcases except testcase1 and testcase2 to run locally with cleanup
 test_%:
@@ -108,11 +110,13 @@ test_%:
 	docker compose -f ../../docker-compose.yml run --no-deps provision python3 -m boptest_submit --shared --path ./boptest/testcases/$*
 # Run testcase tests
 	cd .. && python testing/test_$*.py $(ARG)
-# Stop testcase container
-	docker compose -f ../../docker-compose.yml down
-	if [ $(SINGLE) = true ]; then\
-	     python report.py;\
-	fi\
+# Stop testcase container if it was not running when we started
+	if [ ${status} -ne 200 ]; then \
+		docker compose -f ../../docker-compose.yml down
+	fi
+	if [ $(SINGLE) = true ]; then \
+	     python report.py
+	fi
 
 test_parser:
 	make run_jm
