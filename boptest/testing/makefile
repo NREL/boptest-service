@@ -83,8 +83,8 @@ status = $$(curl -s -o /dev/null -I -w "%{http_code}" http://127.0.0.1/version |
 test_%_travis:
 # Build and start the service if it is not running
 	if [ ${status} -ne 200 ]; then \
-		docker compose -f ../../docker-compose.yml up --build -d web worker
-		python sleep10.py
+		docker compose -f ../../docker-compose.yml up --build -d web worker; \
+		python sleep10.py; \
 	fi
 # Compile testcase model
 	make compile_testcase_model TESTCASE=$*
@@ -94,15 +94,15 @@ test_%_travis:
 	cd .. && python testing/test_$*.py $(ARG)
 # Stop testcase container if it was not running when we started
 	if [ ${status} -ne 200 ]; then \
-		docker compose -f ../../docker-compose.yml down
+		docker compose -f ../../docker-compose.yml down; \
 	fi
 
 # Generic test for all testcases except testcase1 and testcase2 to run locally with cleanup
 test_%:
 # Build and start the service if it is not running
 	if [ ${status} -ne 200 ]; then \
-		docker compose -f ../../docker-compose.yml up --build -d web worker
-		python sleep10.py
+		docker compose -f ../../docker-compose.yml up --build -d web worker; \
+		python sleep10.py; \
 	fi
 # Compile testcase model
 	make compile_testcase_model TESTCASE=$*
@@ -112,10 +112,10 @@ test_%:
 	cd .. && python testing/test_$*.py $(ARG)
 # Stop testcase container if it was not running when we started
 	if [ ${status} -ne 200 ]; then \
-		docker compose -f ../../docker-compose.yml down
+		docker compose -f ../../docker-compose.yml down; \
 	fi
 	if [ $(SINGLE) = true ]; then \
-	     python report.py
+	     python report.py; \
 	fi
 
 test_parser:
