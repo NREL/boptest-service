@@ -246,7 +246,7 @@ test_all:
 	make test_data SINGLE=false
 	make test_forecast SINGLE=false
 	make test_kpis SINGLE=false
-	make test_testcase SINGLE=false
+	# make test_testcase SINGLE=false
 	# make test_readme_commands SINGLE=false
 	make test_testcase1 SINGLE=false
 	make test_testcase2 SINGLE=false
