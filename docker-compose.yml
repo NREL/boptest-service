@@ -58,22 +58,23 @@ services:
       - minio
       - server
       - /data
+      - --console-address
+      - ":9001"
     ports:
       - "9000:9000"
+      - "9001:9001"
     environment:
-      - MINIO_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
-      - MINIO_SECRET_KEY=${AWS_SECRET_ACCESS_KEY}
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
   mc:
     image: minio/mc
-    environment:
-      - MINIO_ACCESS_KEY=${AWS_ACCESS_KEY_ID}
-      - MINIO_SECRET_KEY=${AWS_SECRET_ACCESS_KEY}
     entrypoint: >
       /bin/sh -c "
       sleep 5;
-      /usr/bin/mc config host add myminio http://minio:9000 $${MINIO_ACCESS_KEY} $${MINIO_SECRET_KEY};
+      /usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/alfalfa;
-      /usr/bin/mc policy public myminio/alfalfa;
+      /usr/bin/mc anonymous set public myminio/alfalfa;
+      /usr/bin/mc admin user svcacct add --access-key ${AWS_ACCESS_KEY_ID} --secret-key ${AWS_SECRET_ACCESS_KEY} myminio ${MINIO_ROOT_USER};
       "
     depends_on:
       - minio
