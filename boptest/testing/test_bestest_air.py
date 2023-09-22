@@ -76,7 +76,7 @@ class Run(unittest.TestCase, utilities.partialTestTimePeriod):
         # Set simulation step
         requests.put('{0}/step/{1}'.format(self.url, self.testid), json={'step':length})
         # Simulation Loop
-        requests.post('{0}/advance/{1}'.format(self.url, self.testid))
+        requests.post('{0}/advance/{1}'.format(self.url, self.testid), json=dict())
         # Try submit results to dashboard
         status = requests.post("{0}/submit/{1}".format(self.url, self.testid), json={"api_key": 'valid_key',
                                                                      "unit_test":"True"}).json()['status']

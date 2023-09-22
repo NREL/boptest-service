@@ -30,13 +30,19 @@ class Job:
 
         self.timeout = float(os.environ["BOPTEST_TIMEOUT"])
 
-        # Download the testcase FMU
-        self.test_dir = os.path.join("/simulate", self.testid)
+        # Prepare a directory where the test will run
+        self.simulate_dir = "/simulate"
+        self.test_dir = os.path.join(self.simulate_dir, self.testid)
         self.fmu_path = os.path.join(self.test_dir, "model.fmu")
 
         if not os.path.exists(self.test_dir):
             os.makedirs(self.test_dir)
 
+        os.chdir(self.test_dir)
+        # testcase.py assumes version.txt is in the cwd
+        shutil.copyfile("/version.txt", "./version.txt")
+
+        # Download the testcase FMU
         self.s3 = boto3.resource(
             "s3", region_name=os.environ["BOPTEST_REGION"], endpoint_url=os.environ["BOPTEST_INTERNAL_S3_URL"]
         )
@@ -101,14 +107,14 @@ class Job:
         self.message_handlers[method] = callback
 
     def unpack(self, data):
-        return msgpack.unpackb(data, raw=True)
+        return msgpack.unpackb(data)
 
     def pack(self, data):
         # use_bin_type=False is because this is running in python 2,
         # it should be avoided in the future.
         # Also, python 2, means this is falling back to a pure python
         # ipmlementation which is slower.
-        return msgpack.packb(data, use_bin_type=False)
+        return msgpack.packb(data)
 
     class InvalidRequestError(Exception):
         pass
@@ -120,30 +126,29 @@ class Job:
         try:
             return handler(params)
         except Exception as e:
-            raise Job.InvalidRequestError(e.message)
+            raise Job.InvalidRequestError(e)
 
     def process_messages(self):
         request_id = False
-        response_channel = False
+        response_channel = self.get_response_channel()
         try:
-            response_channel = self.get_response_channel()
             message = self.redis_pubsub.get_message()
             if message:
                 message_type = message["type"]
                 if message_type == "message":
                     message_data = self.unpack(message.get("data"))
+
                     request_id = message_data["requestID"]
                     method = message_data.get("method")
                     params = message_data.get("params")
 
                     callback_result = self.call_message_handler(method, params)
-
                     packed_result = self.pack({"requestID": request_id, "payload": callback_result})
                     self.redis.publish(response_channel, packed_result)
 
                     self.last_message_time = datetime.now()
         except Job.InvalidRequestError as e:
-            payload = {"status": 400, "message": "Bad Request", "payload": e.message}
+            payload = {"status": 400, "message": "Bad Request", "payload": str(e)}
             packed_result = self.pack({"requestID": request_id, "payload": payload})
             self.redis.publish(response_channel, packed_result)
         except Exception:
@@ -258,9 +263,12 @@ class Job:
         tar.close()
 
         uploadkey = "simulated/%s" % tarname
-        self.s3_bucket.upload_file(tarname, uploadkey)
-        os.remove(tarname)
+        # minio does not support object level ACL, therefore ExtraArgs will only apply to s3 configurations
+        self.s3_bucket.upload_file(tarname, uploadkey, ExtraArgs={'ACL': 'public-read'})
 
+        # Disable logging to prevent a trailing log file to be generated in the simulat dir
+        self.tc.fmu.set_log_level(0)
+        os.chdir(self.simulate_dir)
         shutil.rmtree(self.test_dir)
 
     def to_camel_case(self, snake_str):
