@@ -74,6 +74,8 @@ services:
       /usr/bin/mc config host add myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb myminio/alfalfa;
       /usr/bin/mc anonymous set public myminio/alfalfa;
+      /usr/bin/mc policy set download myminio/alfalfa/testcases;
+      /usr/bin/mc policy set download myminio/alfalfa/simulated;
       /usr/bin/mc admin user svcacct add --access-key ${AWS_ACCESS_KEY_ID} --secret-key ${AWS_SECRET_ACCESS_KEY} myminio ${MINIO_ROOT_USER};
       "
     depends_on:
