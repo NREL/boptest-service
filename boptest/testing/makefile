@@ -211,6 +211,21 @@ test_kpis:
         	python report.py;\
 	fi
 
+test_bacnet:
+# Compile testcase model
+	make compile_testcase_model TESTCASE=bestest_air
+# Build and deploy testcase image
+	cd .. && TESTCASE=bestest_air docker-compose up -d
+	python sleep10.py
+# Run testcase tests
+	cd .. && python testing/test_bacnet.py
+# Stop testcase container
+	cd .. && docker-compose down
+# Report test results
+	if [ $(SINGLE) = true ]; then\
+        	python report.py;\
+	fi
+
 test_testcase:
 # Run jm docker container
 	make run_jm
@@ -223,7 +238,9 @@ test_testcase:
 # Stop jm docker container
 	make stop_jm
 # Report test results
-	python report.py
+	if [ $(SINGLE) = true ]; then\
+        	python report.py;\
+	fi
 
 test_readme_commands:
 # Test readme commands work right after instantiation of test case container
@@ -246,6 +263,7 @@ test_all:
 	make test_data SINGLE=false
 	make test_forecast SINGLE=false
 	make test_kpis SINGLE=false
+	# make test_bacnet SINGLE=false
 	# make test_testcase SINGLE=false
 	# make test_readme_commands SINGLE=false
 	make test_testcase1 SINGLE=false
