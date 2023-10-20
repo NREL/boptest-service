@@ -1,10 +1,5 @@
 # Release Notes
 
-## BOPTEST v0.5.0-dev
-
-Released on xx/xx/xxxx.
-
-
 ## BOPTEST v0.5.0
 
 Released on 10/04/2023.
