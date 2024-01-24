@@ -86,6 +86,7 @@ jobs:
       - name: Publish docker images to Docker Hub
         if: |
           github.ref == 'refs/heads/develop' ||
+          github.ref == 'refs/heads/experimental' ||
           contains(github.ref, 'refs/tags') 
         shell: bash
         run: ci/publish_to_docker.sh
