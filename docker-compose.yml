@@ -75,7 +75,7 @@ services:
       /usr/bin/mc mb myminio/alfalfa;
       /usr/bin/mc anonymous set public myminio/alfalfa;
       /usr/bin/mc anonymous set download myminio/alfalfa/testcases;
-      /usr/bin/mc anonymous set download myminio/alfalfa/simulated;
+      /usr/bin/mc anonymous set download myminio/alfalfa/tests;
       /usr/bin/mc admin user svcacct add --access-key ${AWS_ACCESS_KEY_ID} --secret-key ${AWS_SECRET_ACCESS_KEY} myminio ${MINIO_ROOT_USER};
       "
     depends_on:
