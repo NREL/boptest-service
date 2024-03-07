@@ -43,14 +43,8 @@ services:
       - BOPTEST_TEST_PRIVILEGED_KEY # Only for testing
     depends_on:
       - redis
-      - goaws
       - worker
       - mc
-  # Provides a local queue, conforming to aws Queue API
-  goaws:
-    image: pafortin/goaws
-    ports:
-      - "4100:4100"
   # Local implementation of s3
   minio:
     image: minio/minio
@@ -98,7 +92,6 @@ services:
       - AWS_SECRET_ACCESS_KEY
     depends_on:
       - redis
-      - goaws
       - mc
   redis:
     image: redis
