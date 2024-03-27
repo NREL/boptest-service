@@ -35,9 +35,6 @@ The core BOPTEST APIs are [documented](https://github.com/ibpsa/project1-boptest
 | List official BOPTEST test cases.                                                                                           | GET `testcases`                                            |
 | List unofficial test cases in a namespace.                                                                                  | GET `testcases/{namespace}`                                |
 | List private user test cases. (Auth required)                                                                               | GET `users/{username}/testcases/`                          |
-| Check if specific test case exists.                                                                                         | GET `testcases/{testcase_name}`                            |
-| Check if specific test case exists in the namespace.                                                                        | GET `testcases/{namespace}/{testcase_name}`                |
-| Check if specific private user test case exists.                                                                            | GET `users/{username}/testcases/{testcase_name}`           |
 | Select a test case and begin a new test. (Auth optional)                                                                    | POST ``testcases/{testcase_name}/select``                  |
 | Select a test case from the namespace and begin a new test. (Auth optional)                                                 | POST ``testcases/{namespace}/{testcase_name}/select``      |
 | Select a private user test case and begin a new test. (Auth required)                                                       | POST ``users/{username}/testcases/{testcase_name}/select`` |
