@@ -263,6 +263,8 @@ class Job:
             self.redis.srem(self.userTestsKey, self.testid)
         self.unsubscribe()
 
+        os.remove(self.fmu_path)
+
         tarname = "%s.tar.gz" % self.testid
         tar = tarfile.open(tarname, "w:gz")
         tar.add(self.test_dir, filter=self.reset, arcname=self.testid)
