@@ -70,3 +70,12 @@ NREL maintains a helm chart for Kubernetes based deployments of BOPTEST-Service.
 # Running the developer Test Suite
 
 Testing is based on the BOPTEST [test suite](https://github.com/NREL/boptest-service/tree/develop/boptest/testing) with small adaptations to conform to the BOPTEST-Service API. Follow the [README](https://github.com/NREL/boptest-service/blob/develop/boptest/testing/README.md) for more information.
+
+# Project Management
+
+Development is tracked by three branches within the project repository.
+
+* `develop` maintains the latest stable version of the project.
+* `main` tracks the latest release version and corresponds to the current production deployment on https://api.boptest.net. A tag is also created for each release version.
+* `experimental` is for versions of the project under evaluation and corresponds to a deployment on the "dev" cluster at https://api.dev.boptest.net.
+
