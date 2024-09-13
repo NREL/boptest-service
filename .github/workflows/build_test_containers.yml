@@ -14,7 +14,7 @@ jobs:
 
   simulation-tests:
     name: Build containers and run boptest simulation tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     timeout-minutes: 240
     env:
       COMPOSE_PROJECT_NAME: boptest_service
